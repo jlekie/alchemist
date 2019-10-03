@@ -50,15 +50,17 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
     let contexts = await (async () => {
         if (_.isString(loadedManifest.manifest.context)) {
-            const contextPath = Path.resolve(Path.dirname(loadedManifest.path), loadedManifest.manifest.context);
+            // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), loadedManifest.manifest.context);
+            const contextPath = await resolveModuleIdentifier(loadedManifest.manifest.context, Path.dirname(loadedManifest.path));
             contextBasePath = Path.dirname(contextPath);
 
             return [ await dataAdapter.loadContext(contextPath) ];
         }
         else if (_.isArray(loadedManifest.manifest.context)) {
-            return Bluebird.map(loadedManifest.manifest.context, (context) => {
+            return Bluebird.map(loadedManifest.manifest.context, async (context) => {
                 if (_.isString(context)) {
-                    const contextPath = Path.resolve(Path.dirname(loadedManifest.path), context);
+                    // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), context);
+                    const contextPath = await resolveModuleIdentifier(context, Path.dirname(loadedManifest.path));
                     contextBasePath = Path.dirname(contextPath);
 
                     return dataAdapter.loadContext(contextPath);
@@ -291,15 +293,17 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
             workflowContexts = await (async () => {
                 if (_.isString(workflowContext)) {
-                    const contextPath = Path.resolve(Path.dirname(loadedManifest.path), workflowContext);
+                    // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), workflowContext);
+                    const contextPath = await resolveModuleIdentifier(workflowContext, Path.dirname(loadedManifest.path));
                     contextBasePath = Path.dirname(contextPath);
 
                     return [ await dataAdapter.loadContext(contextPath) ];
                 }
                 else if (_.isArray(workflowContext)) {
-                    return Bluebird.map(workflowContext, (context) => {
+                    return Bluebird.map(workflowContext, async (context) => {
                         if (_.isString(context)) {
-                            const contextPath = Path.resolve(Path.dirname(loadedManifest.path), context);
+                            // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), context);
+                            const contextPath = await resolveModuleIdentifier(context, Path.dirname(loadedManifest.path));
                             contextBasePath = Path.dirname(contextPath);
 
                             return dataAdapter.loadContext(contextPath);
