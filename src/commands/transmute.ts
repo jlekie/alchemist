@@ -165,7 +165,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
                     return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
                         basePath,
                         contextBasePath
-                    });
+                    }, stage.transform.includedContexts.slice(), stage.transform.excludedContexts.slice());
                 }
             }
         })();
@@ -219,7 +219,12 @@ export async function handler(argv: Arguments<CommandArguments>) {
             }
             else {
                 for (const context of contexts) {
-                    transformedContexts.push(...await transform.transform(context));
+                    if (!context.qualifier || transform.applicableContext(context.qualifier)) {
+                        transformedContexts.push(...await transform.transform(context));
+                    }
+                    else {
+                        transformedContexts.push(context);
+                    }
                 }
             }
 
@@ -341,7 +346,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
                         return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
                             basePath,
                             contextBasePath
-                        });
+                        }, stage.transform.includedContexts.slice(), stage.transform.excludedContexts.slice());
                     }
                 }
             })();
@@ -395,7 +400,12 @@ export async function handler(argv: Arguments<CommandArguments>) {
                 }
                 else {
                     for (const context of workflowContexts) {
-                        transformedContexts.push(...await transform.transform(context));
+                        if (!context.qualifier || transform.applicableContext(context.qualifier)) {
+                            transformedContexts.push(...await transform.transform(context));
+                        }
+                        else {
+                            transformedContexts.push(context);
+                        }
                     }
                 }
 

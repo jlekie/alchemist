@@ -19,7 +19,7 @@ import { TransformOptions } from './transformManifest';
 
 export interface IDataAdapter {
     loadContext(path: string): Promise<Context>;
-    loadTransform(path: string, options: TransformOptions, params: TransformParams): Promise<ITransformation>;
+    loadTransform(path: string, options: TransformOptions, params: TransformParams, includedContexts?: string[], excludedContexts?: string[]): Promise<ITransformation>;
     loadManifest(path: string): Promise<IManifest>;
     loadRendererManifest(path: string): Promise<IRendererManifest>;
     loadRenderer(path: string, options: RendererOptions, params: RendererCreationOptions): Promise<IRenderer>;
@@ -35,7 +35,7 @@ export class DataAdapter implements IDataAdapter {
         return Context.parse(hash, qualifier);
     }
 
-    public async loadTransform(path: string, options: TransformOptions, params: TransformParams) {
+    public async loadTransform(path: string, options: TransformOptions, params: TransformParams, includedContexts?: string[], excludedContexts?: string[]) {
         debug('loadTransform', { path });
 
         const transformModule = await import(path);
@@ -45,7 +45,9 @@ export class DataAdapter implements IDataAdapter {
             name: baseName,
             handler: transformModule.handler,
             params,
-            options
+            options,
+            includedContexts,
+            excludedContexts
         });
     }
 
