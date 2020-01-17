@@ -289,7 +289,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
         // }
     }
 
-    await Bluebird.map(loadedManifest.manifest.workflows, async (workflow) => {
+    const processWorkflow = async (workflow: Alchemist.ManifestWorkflow, contexts: Alchemist.Context[]) => {
         let contextBasePath: string | undefined;
 
         let workflowContexts: Alchemist.Context[];
@@ -469,7 +469,11 @@ export async function handler(argv: Arguments<CommandArguments>) {
             //         console.log(workflowContext);
             // }
         }
-    });
+
+        await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts));
+    };
+
+    await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts));
 
     console.log(`${Chalk.blue('Done')} (${Chalk.green('Success')})`);
 }
