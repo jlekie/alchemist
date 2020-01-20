@@ -327,6 +327,13 @@ export async function handler(argv: Arguments<CommandArguments>) {
             workflowContexts = contexts.map(context => context.clone());
         }
 
+        if (workflow.includedContexts.length) {
+            workflowContexts = workflowContexts.filter(context => workflow.includedContexts.every(key => context.keys && context.keys.some(contextKey => contextKey === key)))
+        }
+
+        if (!workflowContexts.length)
+            return;
+
         for (const stage of workflow.stages) {
             // console.log(`  [${Chalk.magenta(workflow.name)}] ${Chalk.cyan(`Executing step "${stage.name}"...`)}`);
 

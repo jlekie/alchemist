@@ -171,6 +171,7 @@ export interface IManifestWorkflow {
     readonly context: (string | Context | (string | Context)[]) | undefined;
     readonly stages: ReadonlyArray<IManifestStage>;
     readonly workflows: ReadonlyArray<IManifestWorkflow>;
+    readonly includedContexts: ReadonlyArray<string>;
 }
 
 export class ManifestWorkflow implements IManifestWorkflow {
@@ -206,12 +207,18 @@ export class ManifestWorkflow implements IManifestWorkflow {
             if (items)
                 return items.map(item => ManifestWorkflow.parse(item));
         });
+        const includedContexts = ParseHelpers.sanitize('includedContexts', (key) => {
+            const items = ParseHelpers.sanitizeOptionalArray(hash[key]);
+            if (items)
+                return items.map(item => ParseHelpers.sanitizeString(item));
+        });
 
         return new ManifestWorkflow({
             name,
             context,
             stages,
-            workflows
+            workflows,
+            includedContexts
         });
     }
 
@@ -219,13 +226,15 @@ export class ManifestWorkflow implements IManifestWorkflow {
     public readonly context: (string | Context | (string | Context)[]) | undefined;
     public readonly stages: ReadonlyArray<IManifestStage>;
     public readonly workflows: ReadonlyArray<IManifestWorkflow>;
+    public readonly includedContexts: ReadonlyArray<string>;
 
     public constructor(params: ManifestWorkflowParams) {
         this.name = params.name;
         this.context = params.context;
         this.stages = params.stages || [];
         this.workflows = params.workflows || [];
+        this.includedContexts = params.includedContexts || [];
     }
 }
 
-export type ManifestWorkflowParams = Pick<ManifestWorkflow, 'name'> & Partial<Pick<ManifestWorkflow, 'stages' | 'context' | 'workflows'>>;
+export type ManifestWorkflowParams = Pick<ManifestWorkflow, 'name'> & Partial<Pick<ManifestWorkflow, 'stages' | 'context' | 'workflows' | 'includedContexts'>>;
