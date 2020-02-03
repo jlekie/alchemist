@@ -289,7 +289,9 @@ export async function handler(argv: Arguments<CommandArguments>) {
         // }
     }
 
-    const processWorkflow = async (workflow: Alchemist.ManifestWorkflow, contexts: Alchemist.Context[]) => {
+    const processWorkflow = async (workflow: Alchemist.ManifestWorkflow, contexts: Alchemist.Context[], prefix?: string) => {
+        const workflowName = prefix ? `${prefix} / ${workflow.name}` : workflow.name;
+
         let contextBasePath: string | undefined;
 
         let workflowContexts: Alchemist.Context[];
@@ -397,7 +399,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
             // })();
 
             if (transform) {
-                console.log(`    [${Chalk.magenta(workflow.name)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Running transform "${transform.name}"...`)}`);
+                console.log(`    [${Chalk.magenta(workflowName)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Running transform "${transform.name}"...`)}`);
 
                 const transformedContexts: Alchemist.Context[] = [];
                 if (stage.mergeContexts) {
@@ -442,7 +444,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
                             const outputPath = outputPathTemplate(_.assign({}, envVars, context));
                             const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
 
-                            console.log(`    [${Chalk.magenta(workflow.name)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
+                            console.log(`    [${Chalk.magenta(workflowName)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
 
                             const result = await loadedRendererManifest.renderer.render(context);
 
@@ -477,7 +479,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
             // }
         }
 
-        await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts));
+        await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts, workflowName));
     };
 
     await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts));
