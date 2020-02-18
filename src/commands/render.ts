@@ -63,7 +63,8 @@ export async function handler(argv: Arguments<CommandArguments>) {
         const transformPaths = await Bluebird.map(argv.transform, path => resolveModuleIdentifier(path));
 
         return Bluebird.map(transformPaths, (transform => dataAdapter.loadTransform(transform, {}, {
-            basePath: Path.dirname(transform)
+            basePath: Path.dirname(transform),
+            manifestBasePath: Path.dirname(transform)
         })));
     })();
 

@@ -10,6 +10,7 @@ export type TransformationHandler = (context: Context, options: TransformOptions
 
 export interface TransformParams {
     basePath: string;
+    manifestBasePath: string;
     contextBasePath?: string;
 }
 

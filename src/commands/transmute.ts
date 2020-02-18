@@ -39,6 +39,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
     const loadedEnvs = await Bluebird.mapSeries(argv.env, path => FS.readFile(path, 'utf8').then(content => Yaml.safeLoad(content)));
     const envVars = _.assign({}, ...loadedEnvs);
 
+    const manifestBasePath = Path.dirname(Path.resolve(argv.manifest));
     const loadedManifest = await (async () => {
         return {
             path: argv.manifest,
@@ -156,6 +157,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
                     return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, Path.dirname(loadedManifest.path)), {}, {
                         basePath,
+                        manifestBasePath,
                         contextBasePath
                     });
                 }
@@ -164,6 +166,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
                     return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
                         basePath,
+                        manifestBasePath,
                         contextBasePath
                     }, stage.transform.includedContexts.slice(), stage.transform.excludedContexts.slice());
                 }
@@ -330,7 +333,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
         }
 
         if (workflow.includedContexts.length) {
-            workflowContexts = workflowContexts.filter(context => workflow.includedContexts.every(key => context.keys && context.keys.some(contextKey => contextKey === key)))
+            workflowContexts = workflowContexts.filter(context => workflow.includedContexts.every(key => context.keys && context.keys.some(contextKey => contextKey === key)));
         }
 
         if (!workflowContexts.length)
@@ -346,6 +349,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
                         return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, Path.dirname(loadedManifest.path)), {}, {
                             basePath,
+                            manifestBasePath,
                             contextBasePath
                         });
                     }
@@ -354,6 +358,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
                         return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
                             basePath,
+                            manifestBasePath,
                             contextBasePath
                         }, stage.transform.includedContexts.slice(), stage.transform.excludedContexts.slice());
                     }
