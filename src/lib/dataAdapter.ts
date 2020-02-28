@@ -18,7 +18,7 @@ import { debug, resolveModuleIdentifier } from './utils';
 import { TransformOptions } from './transformManifest';
 
 export interface IDataAdapter {
-    loadContext(path: string): Promise<Context>;
+    loadContext(path: string): Promise<Context[]>;
     loadTransform(path: string, options: TransformOptions, params: TransformParams, includedContexts?: string[], excludedContexts?: string[]): Promise<ITransformation>;
     loadManifest(path: string): Promise<IManifest>;
     loadRendererManifest(path: string): Promise<IRendererManifest>;
@@ -30,9 +30,9 @@ export class DataAdapter implements IDataAdapter {
         debug('loadContext', { path });
 
         const qualifier = Path.basename(path).replace(Path.extname(path), '');
-        const hash = await FS.readFile(path, 'utf8').then(content => Yaml.safeLoad(content));
+        const hashes = await FS.readFile(path, 'utf8').then(content => Yaml.safeLoadAll(content));
 
-        return Context.parse(hash, qualifier);
+        return hashes.map(hash => Context.parse(hash, qualifier));
     }
 
     public async loadTransform(path: string, options: TransformOptions, params: TransformParams, includedContexts?: string[], excludedContexts?: string[]) {

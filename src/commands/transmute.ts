@@ -55,7 +55,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
             const contextPath = await resolveModuleIdentifier(loadedManifest.manifest.context, Path.dirname(loadedManifest.path));
             contextBasePath = Path.dirname(contextPath);
 
-            return [ await dataAdapter.loadContext(contextPath) ];
+            return dataAdapter.loadContext(contextPath);
         }
         else if (_.isArray(loadedManifest.manifest.context)) {
             return Bluebird.map(loadedManifest.manifest.context, async (context) => {
@@ -69,7 +69,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
                 else {
                     return context;
                 }
-            });
+            }).then(_.flatten);
         }
         else {
             return [ loadedManifest.manifest.context || new Alchemist.Context({}) ];
@@ -307,7 +307,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
                     const contextPath = await resolveModuleIdentifier(workflowContext, Path.dirname(loadedManifest.path));
                     contextBasePath = Path.dirname(contextPath);
 
-                    return [ await dataAdapter.loadContext(contextPath) ];
+                    return dataAdapter.loadContext(contextPath);
                 }
                 else if (_.isArray(workflowContext)) {
                     return Bluebird.map(workflowContext, async (context) => {
@@ -321,7 +321,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
                         else {
                             return context;
                         }
-                    });
+                    }).then(_.flatten);
                 }
                 else {
                     return [ workflowContext ];

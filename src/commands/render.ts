@@ -43,7 +43,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
     let contexts = await (async () => {
         const contextPath = Path.resolve(argv.context);
-        return [ await dataAdapter.loadContext(contextPath) ];
+        return dataAdapter.loadContext(contextPath);
     })();
 
     const loadedRendererManifest = await (async () => {
