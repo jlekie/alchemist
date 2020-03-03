@@ -7,18 +7,21 @@ export class YamlRenderer extends ARenderer {
     public async render(context: Context) {
         if (_.isArray(context.payload)) {
             return Buffer.from(Yaml.safeDump(context.payload, {
-                skipInvalid: true
+                skipInvalid: true,
+                lineWidth: 160
             }));
         }
         else {
             if (context.payload.mergedContexts) {
                 return Buffer.from(context.payload.mergedContexts.map((c: any) => Yaml.safeDump(c.payload, {
-                    skipInvalid: true
+                    skipInvalid: true,
+                    lineWidth: 160
                 })).join('\n---\n\n'));
             }
             else {
                 return Buffer.from(Yaml.safeDump(context.payload, {
-                    skipInvalid: true
+                    skipInvalid: true,
+                    lineWidth: 160
                 }));
             }
         }
