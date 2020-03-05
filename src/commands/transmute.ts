@@ -292,10 +292,10 @@ export async function handler(argv: Arguments<CommandArguments>) {
         // }
     }
 
-    const processWorkflow = async (workflow: Alchemist.ManifestWorkflow, contexts: Alchemist.Context[], prefix?: string) => {
+    const processWorkflow = async (workflow: Alchemist.ManifestWorkflow, contexts: Alchemist.Context[], contextBasePath: string | undefined, prefix?: string) => {
         const workflowName = prefix ? `${prefix} / ${workflow.name}` : workflow.name;
 
-        let contextBasePath: string | undefined;
+        // let contextBasePath: string | undefined;
 
         let workflowContexts: Alchemist.Context[];
         if (workflow.context) {
@@ -484,10 +484,10 @@ export async function handler(argv: Arguments<CommandArguments>) {
             // }
         }
 
-        await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts, workflowName));
+        await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts, contextBasePath, workflowName));
     };
 
-    await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts));
+    await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts, undefined));
 
     console.log(`${Chalk.blue('Done')} (${Chalk.green('Success')})`);
 }
