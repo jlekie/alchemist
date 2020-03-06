@@ -487,7 +487,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
         await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts, contextBasePath, workflowName));
     };
 
-    await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts, undefined));
+    await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts, contextBasePath));
 
     console.log(`${Chalk.blue('Done')} (${Chalk.green('Success')})`);
 }
