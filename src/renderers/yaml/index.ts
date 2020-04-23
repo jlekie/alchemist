@@ -28,6 +28,27 @@ export class YamlRenderer extends ARenderer {
     }
 }
 
+export class YamlMultiRenderer extends ARenderer {
+    public async render(context: Context) {
+        if (_.isArray(context.payload)) {
+            return Buffer.from(context.payload.map((c: any) => Yaml.safeDump(c, {
+                skipInvalid: true,
+                lineWidth: 160
+            })).join('\n---\n\n'));
+        }
+        else {
+            return Buffer.from(Yaml.safeDump(context.payload, {
+                skipInvalid: true,
+                lineWidth: 160
+            }));
+        }
+    }
+}
+
+
 export const create: CreateRendererHandler = (options, params) => {
-    return new YamlRenderer();
+    if (options.multiDoc)
+        return new YamlMultiRenderer();
+    else
+        return new YamlRenderer();
 };
