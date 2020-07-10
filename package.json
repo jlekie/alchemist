@@ -1,6 +1,6 @@
 {
   "name": "@jlekie/alchemist",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Joe Lekie",
@@ -10,9 +10,7 @@
     "watch": "tsc --watch",
     "start": "node dist/run.js"
   },
-  "bin": {
-    "alchemist": "dist/run.js"
-  },
+  "bin": "dist/run.js",
   "devDependencies": {
     "@types/bluebird": "3.5.27",
     "@types/debug": "4.1.5",

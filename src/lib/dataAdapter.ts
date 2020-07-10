@@ -6,8 +6,6 @@ import * as Yaml from 'js-yaml';
 
 import * as ParseHelpers from '@jlekie/parse-helpers';
 
-import * as Handlebars from 'handlebars';
-
 import { Context } from './context';
 import { ITransformation, Transformation, TransformationHandler, TransformParams } from './transform';
 import { IManifest, Manifest } from './manifest';
