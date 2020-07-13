@@ -42,7 +42,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
     const manifestBasePath = Path.dirname(Path.resolve(argv.manifest));
     const loadedManifest = await (async () => {
         return {
-            path: argv.manifest,
+            path: Path.resolve(argv.manifest),
             manifest: await dataAdapter.loadManifest(Path.resolve(argv.manifest))
         };
     })();
