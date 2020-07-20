@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { Arguments, CommandBuilder } from 'yargs';
-import Chalk from 'chalk';
+import * as Chalk from 'chalk';
 
 import * as Path from 'path';
 import * as FS from 'fs-extra';

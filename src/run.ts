@@ -3,7 +3,7 @@
 import 'source-map-support/register';
 
 import * as Yargs from 'yargs';
-import Chalk from 'chalk';
+import * as Chalk from 'chalk';
 
 import { debug } from './lib/utils';
 
