@@ -4,6 +4,7 @@ export * from './lib/manifest';
 export * from './lib/renderer';
 export * from './lib/transformManifest';
 export * from './lib/rendererManifest';
+export * from './lib/handlers';
 
 import { resolveModuleIdentifier } from './lib/utils';
 
