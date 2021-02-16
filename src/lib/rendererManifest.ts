@@ -20,23 +20,19 @@ export class RendererManifest implements IRendererManifest {
         debug('RendererManifest.parse', hash);
 
         const engine = ParseHelpers.sanitize('engine', (key) => ParseHelpers.sanitizeString(hash[key]));
-        // const output = ParseHelpers.sanitize('output', (key) => ParseHelpers.sanitizeOptionalString(hash[key]));
-        const options = ParseHelpers.sanitize('options', (key) => _.omit(hash, 'engine', 'output'));
+        const options = ParseHelpers.sanitize('options', (key) => _.omit(hash, 'engine'));
 
         return new RendererManifest({
             engine,
-            // output,
             options
         });
     }
 
     public readonly engine: string;
-    // public readonly output: string | undefined;
     public readonly options: RendererOptions;
 
     public constructor(params: RendererManifestParams) {
         this.engine = params.engine;
-        // this.output = params.output;
         this.options = params.options || {};
     }
 }

@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { Arguments, CommandBuilder } from 'yargs';
-import Chalk from 'chalk';
+import * as Chalk from 'chalk';
 
 import * as Path from 'path';
 import * as FS from 'fs-extra';
@@ -43,7 +43,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
     let contexts = await (async () => {
         const contextPath = Path.resolve(argv.context);
-        return [ await dataAdapter.loadContext(contextPath) ];
+        return dataAdapter.loadContext(contextPath);
     })();
 
     const loadedRendererManifest = await (async () => {
@@ -63,7 +63,8 @@ export async function handler(argv: Arguments<CommandArguments>) {
         const transformPaths = await Bluebird.map(argv.transform, path => resolveModuleIdentifier(path));
 
         return Bluebird.map(transformPaths, (transform => dataAdapter.loadTransform(transform, {}, {
-            basePath: Path.dirname(transform)
+            basePath: Path.dirname(transform),
+            manifestBasePath: Path.dirname(transform)
         })));
     })();
 
