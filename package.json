@@ -1,6 +1,6 @@
 {
   "name": "@jlekie/alchemist",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Joe Lekie",
@@ -37,6 +37,7 @@
     "yargs": "15.4.1"
   },
   "files": [
+    "/src",
     "/dist",
     "/transforms",
     "/renderers"
