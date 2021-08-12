@@ -12,6 +12,7 @@ export interface TransformParams {
     basePath: string;
     manifestBasePath: string;
     contextBasePath?: string;
+    runtimeArgs: Record<string, string>;
 }
 
 export interface ITransformation {

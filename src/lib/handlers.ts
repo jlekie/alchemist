@@ -15,6 +15,7 @@ import { debug, resolveModuleIdentifier } from '../lib/utils';
 
 export interface TransmuteParams {
     env?: string[];
+    runtimeArgs?: Record<string, string>;
     dataAdapter: IDataAdapter;
     manifestBasePath: string,
     loadedManifest: {
@@ -22,7 +23,7 @@ export interface TransmuteParams {
         manifest: IManifest;
     };
 }
-export async function transmute({ env, dataAdapter, loadedManifest, manifestBasePath }: TransmuteParams) {
+export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedManifest, manifestBasePath }: TransmuteParams) {
     console.log(Chalk.blue('Transmuting...'));
 
     const loadedEnvs = await Bluebird.mapSeries(env || [], path => FS.readFile(path, 'utf8').then(content => Yaml.safeLoad(content)));
@@ -139,7 +140,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
                     return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, Path.dirname(loadedManifest.path)), {}, {
                         basePath,
                         manifestBasePath,
-                        contextBasePath
+                        contextBasePath,
+                        runtimeArgs
                     });
                 }
                 else {
@@ -148,7 +150,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
                     return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
                         basePath,
                         manifestBasePath,
-                        contextBasePath
+                        contextBasePath,
+                        runtimeArgs
                     }, stage.transform.includedContexts.slice(), stage.transform.excludedContexts.slice());
                 }
             }
@@ -198,7 +201,7 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
             const transformedContexts: Context[] = [];
             if (stage.mergeContexts) {
                 transformedContexts.push(...await transform.transform(new Context({
-                    mergedContexts: contexts.slice()
+                    mergedContexts: contexts.slice(),
                 })));
             }
             else {
@@ -228,7 +231,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
                     for (const context of contexts) {
                         const result = await loadedRendererManifest.renderer.render(context);
 
-                        process.stdout.write(result);
+                        for (const resultItem of (_.isArray(result) ? result : [ result ]))
+                            process.stdout.write(resultItem);
                     }
                 }
                 else {
@@ -247,7 +251,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
 
                         // console.log(result.toString('utf8'));
 
-                        await FS.outputFile(contextOutputPath, result);
+                        for (const resultItem of (_.isArray(result) ? result : [ result ]))
+                            await FS.outputFile(contextOutputPath, resultItem);
                     }
                 }
             }
@@ -331,7 +336,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
                         return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, Path.dirname(loadedManifest.path)), {}, {
                             basePath,
                             manifestBasePath,
-                            contextBasePath
+                            contextBasePath,
+                            runtimeArgs
                         });
                     }
                     else {
@@ -340,7 +346,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
                         return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
                             basePath,
                             manifestBasePath,
-                            contextBasePath
+                            contextBasePath,
+                            runtimeArgs
                         }, stage.transform.includedContexts.slice(), stage.transform.excludedContexts.slice());
                     }
                 }
@@ -420,7 +427,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
                         for (const context of contexts) {
                             const result = await loadedRendererManifest.renderer.render(context);
 
-                            process.stdout.write(result);
+                            for (const resultItem of (_.isArray(result) ? result : [ result ]))
+                                process.stdout.write(resultItem);
                         }
                     }
                     else {
@@ -439,7 +447,8 @@ export async function transmute({ env, dataAdapter, loadedManifest, manifestBase
 
                             // console.log(result.toString('utf8'));
 
-                            await FS.outputFile(contextOutputPath, result);
+                            for (const resultItem of (_.isArray(result) ? result : [ result ]))
+                                await FS.outputFile(contextOutputPath, resultItem);
                         }
                     }
                 }

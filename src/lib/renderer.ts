@@ -15,9 +15,9 @@ export interface RendererOptions {
 }
 
 export interface IRenderer {
-    render(context: Context): Promise<Buffer>;
+    render(context: Context): Promise<Buffer | Buffer[]>;
 }
 
 export abstract class ARenderer implements IRenderer {
-    public abstract render(context: Context): Promise<Buffer>;
+    public abstract render(context: Context): Promise<Buffer | Buffer[]>;
 }

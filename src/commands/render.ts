@@ -64,7 +64,8 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
         return Bluebird.map(transformPaths, (transform => dataAdapter.loadTransform(transform, {}, {
             basePath: Path.dirname(transform),
-            manifestBasePath: Path.dirname(transform)
+            manifestBasePath: Path.dirname(transform),
+            runtimeArgs: {}
         })));
     })();
 
@@ -102,7 +103,8 @@ export async function handler(argv: Arguments<CommandArguments>) {
         for (const context of contexts) {
             const result = await loadedRendererManifest.renderer.render(context);
 
-            console.log(result.toString('utf8'));
+            for (const resultItem of (_.isArray(result) ? result : [ result ]))
+                console.log(resultItem.toString('utf8'));
         }
     }
 

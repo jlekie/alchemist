@@ -14,6 +14,7 @@ import { debug, resolveModuleIdentifier } from '../lib/utils';
 export interface CommandArguments {
     manifest: string;
     env: string[];
+    arg: string[];
 }
 
 interface LoadedManfiest {
@@ -29,6 +30,10 @@ export const builder: CommandBuilder<CommandArguments> = {
         array: true,
         default: []
     },
+    arg: {
+        array: true,
+        default: []
+    }
 };
 
 export async function handler(argv: Arguments<CommandArguments>) {
@@ -42,8 +47,11 @@ export async function handler(argv: Arguments<CommandArguments>) {
         };
     })();
 
+    const runtimeArgs = _.fromPairs(argv.arg.map(v => v.split('=', 2)));
+
     await Alchemist.transmute({
         env: argv.env,
+        runtimeArgs,
         manifestBasePath,
         dataAdapter,
         loadedManifest
