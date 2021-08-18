@@ -238,7 +238,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                 else {
                     const outputPathTemplate = _.template(stage.output);
 
-                    for (const context of contexts) {
+                    await Bluebird.map(contexts, async context => {
                         const outputPath = outputPathTemplate(_.assign({}, envVars, context));
                         const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
 
@@ -253,7 +253,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
 
                         for (const resultItem of (_.isArray(result) ? result : [ result ]))
                             await FS.outputFile(contextOutputPath, resultItem);
-                    }
+                    });
                 }
             }
         }
@@ -434,7 +434,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                     else {
                         const outputPathTemplate = _.template(stage.output);
 
-                        for (const context of workflowContexts) {
+                        await Bluebird.map(workflowContexts, async context => {
                             const outputPath = outputPathTemplate(_.assign({}, envVars, context));
                             const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
 
@@ -449,7 +449,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
 
                             for (const resultItem of (_.isArray(result) ? result : [ result ]))
                                 await FS.outputFile(contextOutputPath, resultItem);
-                        }
+                        });
                     }
                 }
             }
