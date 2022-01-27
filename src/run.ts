@@ -2,6 +2,9 @@
 
 import 'source-map-support/register';
 
+import * as TSNode from 'ts-node';
+TSNode.register();
+
 import * as Yargs from 'yargs';
 import * as Chalk from 'chalk';
 
