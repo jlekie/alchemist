@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc --build",
-    "watch": "tsc --watch",
+    "watch": "tsc --watch --preserveWatchOutput",
     "start": "node dist/run.js"
   },
   "bin": "dist/run.js",
