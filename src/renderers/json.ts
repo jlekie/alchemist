@@ -2,7 +2,9 @@ import { ARenderer, RendererOptions, Context, CreateRendererHandler } from '..';
 
 export class JsonRenderer extends ARenderer {
     public async render(context: Context) {
-        return Buffer.from(JSON.stringify(context.payload, undefined, 4));
+        return {
+            buffer: Buffer.from(JSON.stringify(context.payload, undefined, 4))
+        };
     }
 }
 

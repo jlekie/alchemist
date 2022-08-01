@@ -22,8 +22,9 @@ export interface TransmuteParams {
         path: string;
         manifest: IManifest;
     };
+    contextValues: Record<string, string>;
 }
-export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedManifest, manifestBasePath }: TransmuteParams) {
+export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedManifest, manifestBasePath, contextValues }: TransmuteParams) {
     console.log(Chalk.blue('Transmuting...'));
 
     const loadedEnvs = await Bluebird.mapSeries(env || [], path => FS.readFile(path, 'utf8').then(content => Yaml.safeLoad(content)));
@@ -56,7 +57,12 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
         else {
             return [ loadedManifest.manifest.context || new Context({}) ];
         }
-    })();
+    })().then(contexts => {
+        for (const context of contexts)
+            _.extend(context.payload, contextValues);
+
+        return contexts;
+    });
 
     // const loadedRendererManifest = await (async () => {
     //     if (loadedManifest.manifest.renderer) {
@@ -232,18 +238,13 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                         const result = await loadedRendererManifest.renderer.render(context);
 
                         for (const resultItem of (_.isArray(result) ? result : [ result ]))
-                            process.stdout.write(resultItem);
+                            process.stdout.write(resultItem.buffer);
                     }
                 }
                 else {
                     const outputPathTemplate = _.template(stage.output);
 
                     await Bluebird.map(contexts, async context => {
-                        const outputPath = outputPathTemplate(_.assign({}, envVars, context));
-                        const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
-
-                        console.log(`    [${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
-
                         const result = await loadedRendererManifest.renderer.render(context);
 
                         // console.log(context.qualifier)
@@ -251,8 +252,18 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
 
                         // console.log(result.toString('utf8'));
 
-                        for (const resultItem of (_.isArray(result) ? result : [ result ]))
-                            await FS.outputFile(contextOutputPath, resultItem);
+                        for (const resultItem of (_.isArray(result) ? result : [ result ])) {
+                            const outputPath = outputPathTemplate(_.assign({ cwd: Path.resolve() }, envVars, context, {
+                                contextQualifier: context.qualifier ?? '.'
+                            }, {
+                                rendererQualifier: resultItem.qualifier ?? '.'
+                            }));
+                            const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
+
+                            console.log(`    [${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
+
+                            await FS.outputFile(contextOutputPath, resultItem.buffer);
+                        }
                     });
                 }
             }
@@ -428,18 +439,13 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                             const result = await loadedRendererManifest.renderer.render(context);
 
                             for (const resultItem of (_.isArray(result) ? result : [ result ]))
-                                process.stdout.write(resultItem);
+                                process.stdout.write(resultItem.buffer);
                         }
                     }
                     else {
                         const outputPathTemplate = _.template(stage.output);
 
                         await Bluebird.map(workflowContexts, async context => {
-                            const outputPath = outputPathTemplate(_.assign({}, envVars, context));
-                            const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
-
-                            console.log(`    [${Chalk.magenta(workflowName)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
-
                             const result = await loadedRendererManifest.renderer.render(context);
 
                             // console.log(context.qualifier)
@@ -447,8 +453,18 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
 
                             // console.log(result.toString('utf8'));
 
-                            for (const resultItem of (_.isArray(result) ? result : [ result ]))
-                                await FS.outputFile(contextOutputPath, resultItem);
+                            for (const resultItem of (_.isArray(result) ? result : [ result ])) {
+                                const outputPath = outputPathTemplate(_.assign({ cwd: Path.resolve() }, envVars, context, {
+                                    contextQualifier: context.qualifier ?? '.'
+                                }, {
+                                    rendererQualifier: resultItem.qualifier ?? '.'
+                                }));
+                                const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
+    
+                                console.log(`    [${Chalk.magenta(workflowName)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
+
+                                await FS.outputFile(contextOutputPath, resultItem.buffer);
+                            }
                         });
                     }
                 }

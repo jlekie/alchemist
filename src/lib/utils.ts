@@ -3,16 +3,19 @@ import * as Debug from 'debug';
 import * as FS from 'fs-extra';
 import * as Path from 'path';
 
+import { createRequire } from 'module';
+
 export const debug = Debug('@jlekie/alchemist');
 
 export async function resolveModuleIdentifier(identifier: string, basePath?: string) {
     debug('resolveModuleIdentifier', { identifier, basePath });
 
-    const resolvedPath = require.resolve(identifier, basePath ? {
+    const resolvedPath = createRequire(require.resolve(identifier, basePath ? {
         paths: [ basePath ]
-    } : undefined);
+    } : undefined));
+    console.log(resolvedPath)
 
-    return resolvedPath;
+    return resolvedPath(identifier);
 
     // const identifierPath = basePath ? Path.resolve(basePath, identifier) : Path.resolve(identifier);
 

@@ -15,6 +15,8 @@ export interface CommandArguments {
     manifest: string;
     env: string[];
     arg: string[];
+    contextValue: string[];
+    cwd?: string;
 }
 
 interface LoadedManfiest {
@@ -33,10 +35,20 @@ export const builder: CommandBuilder<CommandArguments> = {
     arg: {
         array: true,
         default: []
+    },
+    contextValue: {
+        array: true,
+        default: []
+    },
+    cwd: {
+        string: true
     }
 };
 
 export async function handler(argv: Arguments<CommandArguments>) {
+    if (argv.cwd)
+        process.chdir(argv.cwd);
+
     const dataAdapter = Alchemist.createDataAdapter();
 
     const manifestBasePath = Path.dirname(Path.resolve(argv.manifest));
@@ -49,11 +61,14 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
     const runtimeArgs = _.fromPairs(argv.arg.map(v => v.split('=', 2)));
 
+    const contextValues = _.fromPairs(argv.contextValue.map(v => v.split('=', 2)));
+
     await Alchemist.transmute({
         env: argv.env,
         runtimeArgs,
         manifestBasePath,
         dataAdapter,
-        loadedManifest
+        loadedManifest,
+        contextValues
     });
 }

@@ -14,10 +14,14 @@ export interface RendererOptions {
     [key: string]: any;
 }
 
+export interface IRendererOutput {
+    buffer: Buffer;
+    qualifier?: string;
+}
 export interface IRenderer {
-    render(context: Context): Promise<Buffer | Buffer[]>;
+    render(context: Context): Promise<IRendererOutput | IRendererOutput[]>;
 }
 
 export abstract class ARenderer implements IRenderer {
-    public abstract render(context: Context): Promise<Buffer | Buffer[]>;
+    public abstract render(context: Context): Promise<IRendererOutput | IRendererOutput[]>;
 }
