@@ -10,12 +10,11 @@ export const debug = Debug('@jlekie/alchemist');
 export async function resolveModuleIdentifier(identifier: string, basePath?: string) {
     debug('resolveModuleIdentifier', { identifier, basePath });
 
-    const resolvedPath = createRequire(require.resolve(identifier, basePath ? {
+    const resolvedPath = require.resolve(identifier, basePath ? {
         paths: [ basePath ]
-    } : undefined));
-    console.log(resolvedPath)
+    } : undefined);
 
-    return resolvedPath(identifier);
+    return resolvedPath;
 
     // const identifierPath = basePath ? Path.resolve(basePath, identifier) : Path.resolve(identifier);
 
