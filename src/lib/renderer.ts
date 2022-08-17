@@ -7,7 +7,7 @@ import { debug } from './utils';
 export type CreateRendererHandler = (options: RendererOptions, params: RendererCreationOptions) => IRenderer | Promise<IRenderer>;
 
 export interface RendererCreationOptions {
-    basePath: string;
+    basePath?: string;
 }
 
 export interface RendererOptions {

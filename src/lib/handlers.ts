@@ -17,11 +17,8 @@ export interface TransmuteParams {
     env?: string[];
     runtimeArgs?: Record<string, string>;
     dataAdapter: IDataAdapter;
-    manifestBasePath: string,
-    loadedManifest: {
-        path: string;
-        manifest: IManifest;
-    };
+    manifestBasePath?: string,
+    loadedManifest: IManifest;
     contextValues: Record<string, string>;
 }
 export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedManifest, manifestBasePath, contextValues }: TransmuteParams) {
@@ -33,18 +30,18 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
     let contextBasePath: string | undefined;
 
     let contexts = await (async () => {
-        if (_.isString(loadedManifest.manifest.context)) {
+        if (_.isString(loadedManifest.context)) {
             // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), loadedManifest.manifest.context);
-            const contextPath = await resolveModuleIdentifier(loadedManifest.manifest.context, Path.dirname(loadedManifest.path));
+            const contextPath = await resolveModuleIdentifier(loadedManifest.context, manifestBasePath);
             contextBasePath = Path.dirname(contextPath);
 
             return dataAdapter.loadContext(contextPath);
         }
-        else if (_.isArray(loadedManifest.manifest.context)) {
-            return Bluebird.map(loadedManifest.manifest.context, async (context) => {
+        else if (_.isArray(loadedManifest.context)) {
+            return Bluebird.map(loadedManifest.context, async (context) => {
                 if (_.isString(context)) {
                     // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), context);
-                    const contextPath = await resolveModuleIdentifier(context, Path.dirname(loadedManifest.path));
+                    const contextPath = await resolveModuleIdentifier(context, manifestBasePath);
                     contextBasePath = Path.dirname(contextPath);
 
                     return dataAdapter.loadContext(contextPath);
@@ -55,7 +52,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
             }).then(_.flatten);
         }
         else {
-            return [ loadedManifest.manifest.context || new Context({}) ];
+            return [ loadedManifest.context || new Context({}) ];
         }
     })().then(contexts => {
         for (const context of contexts)
@@ -135,7 +132,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
     //     console.log(context);
     // }
 
-    for (const stage of loadedManifest.manifest.stages) {
+    for (const stage of loadedManifest.stages) {
         // console.log(`  ${Chalk.cyan(`Executing step "${stage.name}"...`)}`);
 
         const transform = await (async () => {
@@ -143,7 +140,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                 if (_.isString(stage.transform)) {
                     const basePath = Path.dirname(stage.transform);
 
-                    return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, Path.dirname(loadedManifest.path)), {}, {
+                    return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, manifestBasePath), {}, {
                         basePath,
                         manifestBasePath,
                         contextBasePath,
@@ -153,7 +150,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                 else {
                     const basePath = Path.dirname(stage.transform.module);
 
-                    return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
+                    return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, manifestBasePath), stage.transform.options, {
                         basePath,
                         manifestBasePath,
                         contextBasePath,
@@ -166,8 +163,8 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
         const loadedRendererManifest = await (async () => {
             if (stage.renderer) {
                 if (_.isString(stage.renderer)) {
-                    // const manifestPath = Path.resolve(Path.dirname(loadedManifest.path), stage.renderer);
-                    const manifestPath = await resolveModuleIdentifier(stage.renderer, Path.dirname(loadedManifest.path));
+                    // const manifestPath = Path.resolve(manifestBasePath, stage.renderer);
+                    const manifestPath = await resolveModuleIdentifier(stage.renderer, manifestBasePath);
                     const basePath = Path.dirname(manifestPath);
 
                     const manifest = await dataAdapter.loadRendererManifest(manifestPath);
@@ -181,7 +178,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                     };
                 }
                 else {
-                    const basePath = Path.dirname(loadedManifest.path);
+                    const basePath = manifestBasePath;
 
                     const manifest = stage.renderer;
                     const renderer = await dataAdapter.loadRenderer(await resolveModuleIdentifier(manifest.engine, basePath), manifest.options, {
@@ -258,7 +255,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                             }, {
                                 rendererQualifier: resultItem.qualifier ?? '.'
                             }));
-                            const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
+                            const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(manifestBasePath ?? '.', outputPath);
 
                             console.log(`    [${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
 
@@ -300,8 +297,8 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
 
             workflowContexts = await (async () => {
                 if (_.isString(workflowContext)) {
-                    // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), workflowContext);
-                    const contextPath = await resolveModuleIdentifier(workflowContext, Path.dirname(loadedManifest.path));
+                    // const contextPath = Path.resolve(manifestBasePath, workflowContext);
+                    const contextPath = await resolveModuleIdentifier(workflowContext, manifestBasePath);
                     contextBasePath = Path.dirname(contextPath);
 
                     return dataAdapter.loadContext(contextPath);
@@ -309,8 +306,8 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                 else if (_.isArray(workflowContext)) {
                     return Bluebird.map(workflowContext, async (context) => {
                         if (_.isString(context)) {
-                            // const contextPath = Path.resolve(Path.dirname(loadedManifest.path), context);
-                            const contextPath = await resolveModuleIdentifier(context, Path.dirname(loadedManifest.path));
+                            // const contextPath = Path.resolve(manifestBasePath, context);
+                            const contextPath = await resolveModuleIdentifier(context, manifestBasePath);
                             contextBasePath = Path.dirname(contextPath);
 
                             return dataAdapter.loadContext(contextPath);
@@ -344,7 +341,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                     if (_.isString(stage.transform)) {
                         const basePath = Path.dirname(stage.transform);
 
-                        return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, Path.dirname(loadedManifest.path)), {}, {
+                        return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform, manifestBasePath), {}, {
                             basePath,
                             manifestBasePath,
                             contextBasePath,
@@ -354,7 +351,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                     else {
                         const basePath = Path.dirname(stage.transform.module);
 
-                        return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, Path.dirname(loadedManifest.path)), stage.transform.options, {
+                        return dataAdapter.loadTransform(await resolveModuleIdentifier(stage.transform.module, manifestBasePath), stage.transform.options, {
                             basePath,
                             manifestBasePath,
                             contextBasePath,
@@ -367,8 +364,8 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
             const loadedRendererManifest = await (async () => {
                 if (stage.renderer) {
                     if (_.isString(stage.renderer)) {
-                        // const manifestPath = Path.resolve(Path.dirname(loadedManifest.path), stage.renderer);
-                        const manifestPath = await resolveModuleIdentifier(stage.renderer, Path.dirname(loadedManifest.path));
+                        // const manifestPath = Path.resolve(manifestBasePath, stage.renderer);
+                        const manifestPath = await resolveModuleIdentifier(stage.renderer, manifestBasePath);
                         const basePath = Path.dirname(manifestPath);
 
                         const manifest = await dataAdapter.loadRendererManifest(manifestPath);
@@ -382,7 +379,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                         };
                     }
                     else {
-                        const basePath = Path.dirname(loadedManifest.path);
+                        const basePath = manifestBasePath;
 
                         const manifest = stage.renderer;
                         const renderer = await dataAdapter.loadRenderer(await resolveModuleIdentifier(manifest.engine, basePath), manifest.options, {
@@ -399,7 +396,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
 
             // const outputPath = (() => {
             //     if (stage.output)
-            //         return Path.resolve(Path.dirname(loadedManifest.path), stage.output);
+            //         return Path.resolve(manifestBasePath, stage.output);
             // })();
 
             if (transform) {
@@ -459,7 +456,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
                                 }, {
                                     rendererQualifier: resultItem.qualifier ?? '.'
                                 }));
-                                const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(Path.dirname(loadedManifest.path), outputPath);
+                                const contextOutputPath = Path.isAbsolute(outputPath) ? outputPath : Path.resolve(manifestBasePath ?? '.', outputPath);
     
                                 console.log(`    [${Chalk.magenta(workflowName)} / ${Chalk.cyan(stage.name)}] ${Chalk.grey(`Rendering output to "${contextOutputPath}"...`)}`);
 
@@ -493,7 +490,7 @@ export async function transmute({ env, runtimeArgs = {}, dataAdapter, loadedMani
         await Bluebird.map(workflow.workflows, (workflow) => processWorkflow(workflow, workflowContexts, contextBasePath, workflowName));
     };
 
-    await Bluebird.map(loadedManifest.manifest.workflows, (workflow) => processWorkflow(workflow, contexts, contextBasePath));
+    await Bluebird.map(loadedManifest.workflows, (workflow) => processWorkflow(workflow, contexts, contextBasePath));
 
     console.log(`${Chalk.blue('Done')} (${Chalk.green('Success')})`);
 }

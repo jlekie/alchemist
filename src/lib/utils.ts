@@ -11,7 +11,7 @@ export async function resolveModuleIdentifier(identifier: string, basePath?: str
     debug('resolveModuleIdentifier', { identifier, basePath });
 
     const resolvedPath = require.resolve(identifier, basePath ? {
-        paths: [ basePath ]
+        paths: [ basePath, __dirname ]
     } : undefined);
 
     return resolvedPath;

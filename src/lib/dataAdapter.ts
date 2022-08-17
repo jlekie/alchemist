@@ -4,6 +4,10 @@ import * as Path from 'path';
 import * as FS from 'fs-extra';
 import * as Yaml from 'js-yaml';
 
+import Axios from 'axios';
+
+import * as Url from 'url';
+
 import * as ParseHelpers from '@jlekie/parse-helpers';
 
 import { Context } from './context';
@@ -18,7 +22,12 @@ import { TransformOptions } from './transformManifest';
 export interface IDataAdapter {
     loadContext(path: string): Promise<Context[]>;
     loadTransform(path: string, options: TransformOptions, params: TransformParams, includedContexts?: string[], excludedContexts?: string[]): Promise<ITransformation>;
-    loadManifest(path: string): Promise<IManifest>;
+    loadManifest(path: string): Promise<readonly [
+        IManifest
+    ] | readonly [
+        IManifest,
+        string
+    ]>;
     loadRendererManifest(path: string): Promise<IRendererManifest>;
     loadRenderer(path: string, options: RendererOptions, params: RendererCreationOptions): Promise<IRenderer>;
 }
@@ -52,9 +61,22 @@ export class DataAdapter implements IDataAdapter {
     public async loadManifest(path: string) {
         debug('loadManifest', { path });
 
-        const hash = await FS.readFile(path, 'utf8').then(content => Yaml.safeLoad(content));
+        const parsedManifestUrl = Url.parse(path);
 
-        return Manifest.parse(hash);
+        if (parsedManifestUrl.protocol === 'http:' || parsedManifestUrl.protocol === 'https:') {
+            const response = await Axios(path);
+            const hash = Yaml.safeLoad(response.data);
+
+            return [ Manifest.parse(hash) ] as const;
+        }
+        else {
+            const resolvedPath = Path.resolve(path)
+            const basePath = Path.dirname(resolvedPath)
+
+            const hash = await FS.readFile(resolvedPath, 'utf8').then(content => Yaml.safeLoad(content));
+
+            return [ Manifest.parse(hash), basePath ] as const;
+        }
     }
 
     public async loadRendererManifest(path: string) {

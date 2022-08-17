@@ -7,6 +7,8 @@ import * as Path from 'path';
 import * as FS from 'fs-extra';
 import * as Yaml from 'js-yaml';
 
+import * as Url from 'url';
+
 import * as Alchemist from '..';
 
 import { debug, resolveModuleIdentifier } from '../lib/utils';
@@ -51,13 +53,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
 
     const dataAdapter = Alchemist.createDataAdapter();
 
-    const manifestBasePath = Path.dirname(Path.resolve(argv.manifest));
-    const loadedManifest = await (async () => {
-        return {
-            path: Path.resolve(argv.manifest),
-            manifest: await dataAdapter.loadManifest(Path.resolve(argv.manifest))
-        };
-    })();
+    const [ loadedManifest, manifestBasePath ] = await dataAdapter.loadManifest(argv.manifest);
 
     const runtimeArgs = _.fromPairs(argv.arg.map(v => v.split('=', 2)));
 
