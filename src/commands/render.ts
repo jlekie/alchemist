@@ -104,7 +104,7 @@ export async function handler(argv: Arguments<CommandArguments>) {
             const result = await loadedRendererManifest.renderer.render(context);
 
             for (const resultItem of (_.isArray(result) ? result : [ result ]))
-                console.log(resultItem.toString('utf8'));
+                console.log(resultItem.buffer.toString('utf8'));
         }
     }
 
