@@ -22,7 +22,7 @@ import { TransformOptions } from './transformManifest';
 export interface IDataAdapter {
     loadContext(path: string): Promise<Context[]>;
     loadTransform(path: string, options: TransformOptions, params: TransformParams, includedContexts?: string[], excludedContexts?: string[]): Promise<ITransformation>;
-    loadManifest(path: string): Promise<readonly [
+    loadManifest(path: string, context?: unknown): Promise<readonly [
         IManifest
     ] | readonly [
         IManifest,
@@ -58,14 +58,17 @@ export class DataAdapter implements IDataAdapter {
         });
     }
 
-    public async loadManifest(path: string) {
-        debug('loadManifest', { path });
+    public async loadManifest(path: string, context?: unknown) {
+        debug('loadManifest', { path, context });
 
         const parsedManifestUrl = Url.parse(path);
 
         if (parsedManifestUrl.protocol === 'http:' || parsedManifestUrl.protocol === 'https:') {
             const response = await Axios(path);
             const hash = Yaml.safeLoad(response.data);
+
+            if (context && hash && _.isObject(hash) && !(hash as any).context)
+                (hash as any).context = context;
 
             return [ Manifest.parse(hash) ] as const;
         }
@@ -74,6 +77,9 @@ export class DataAdapter implements IDataAdapter {
             const basePath = Path.dirname(resolvedPath)
 
             const hash = await FS.readFile(resolvedPath, 'utf8').then(content => Yaml.safeLoad(content));
+
+            if (context && hash && _.isObject(hash) && !(hash as any).context)
+                (hash as any).context = context;
 
             return [ Manifest.parse(hash), basePath ] as const;
         }
