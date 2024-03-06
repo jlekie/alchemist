@@ -1,58 +1,50 @@
-import * as ParseHelpers from '@jlekie/parse-helpers';
-import * as _ from 'lodash';
+import _ from 'lodash';
+import { ConstructorParameters } from './misc';
 
-// export interface IContext {
-//     [key: string]: any;
-// }
-
-export interface ContextOptions {
-    qualifier?: string;
-    keys?: string[];
+export interface ContextMatchParams {
+    included: Record<string, string>;
+    excluded: Record<string, string>;
 }
-
-export class Context {
-    public static parse(hash: any, options?: ContextOptions | string) {
-        const payload = ParseHelpers.sanitize('payload', () => {
-            if (_.isArray(hash))
-                return hash;
-            else
-                return ParseHelpers.sanitizeHash(hash);
-        });
-
-        return new Context(payload, options);
-    }
-
-    public payload: Record<string, any> | Array<any>;
-    public qualifier?: string;
-    public keys?: string[];
-
-    public constructor(payload: Record<string, any>, options?: ContextOptions | string) {
-        this.payload = payload;
-
-        const parsedOptions = (() => {
-            if (!options)
-                return {};
-
-            if (_.isString(options))
-                return { qualifier: options };
-            else
-                return options;
-        })();
-
-        this.qualifier = parsedOptions.qualifier;
-        this.keys = parsedOptions.keys;
-    }
-
-    public clone() {
-        const payload = _.cloneDeep(this.payload);
-
-        return new Context(payload, {
-            qualifier: this.qualifier,
-            keys: this.keys
+export class Context<T = unknown> {
+    public static create<T>(payload: T, { labels, metadata }: Partial<{ labels?: Record<string, string | string[] | null | undefined> | undefined, metadata?: Record<string, unknown> | undefined }> = {}) {
+        return new Context<T>({
+            payload,
+            labels,
+            metadata
         });
     }
 
-    public toJson() {
-        return this.payload;
+    public payload: T;
+    public labels: Record<string, string[]>;
+    public metadata: Record<string, unknown>;
+
+    public constructor(params: { payload: T, labels?: Record<string, string | string[] | null | undefined> | undefined, metadata?: Record<string, unknown> | undefined }) {
+        this.payload = params.payload;
+        this.labels = _.transform(params.labels ?? {}, (labels, value, key) => {
+            if (value)
+                labels[key] = typeof value === 'string' ? [ value ] : value
+        }, {} as Record<string, string[]>);
+        this.metadata = params.metadata ?? {};
+    }
+
+    public forward<FT>(payload: FT, { labels, metadata }: Partial<{ labels?: Record<string, string | string[] | null | undefined> | undefined, metadata?: Record<string, unknown> | undefined }> = {}) {
+        return Context.create<FT>(payload, {
+            labels: {
+                ...this.labels,
+                ..._(labels).toPairs().filter(p => p[1] !== undefined).fromPairs().value()
+            },
+            metadata: {
+                ...this.metadata,
+                ..._(metadata).toPairs().filter(p => p[1] !== undefined).fromPairs().value()
+            }
+        });
+    }
+
+    public isMatch({ included = {}, excluded = {} }: ContextMatchParams) {
+        return _.every(included, (value, key) => {
+            return this.labels[key]?.some(l => l === value) ?? false;
+        }) || !_.some(excluded, (value, key) => {
+            return this.labels[key]?.some(l => l === value) ?? false;
+        });
     }
 }

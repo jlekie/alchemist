@@ -1,0 +1,5 @@
+{{accessModifier}}{{#if static}} static{{/if}}{{#if override}} override{{/if}}{{#if async}} async{{/if}} {{name}}({{#each parameters}}{{name}}: {{dataType}}{{#unless @last}}, {{/unless}}{{/each}}){{#if returnDataType}}: {{returnDataType}}{{/if}} {
+    {{#with implementation}}
+    {{> (lookup . "templateUri") context method=..}}
+    {{/with}}
+}

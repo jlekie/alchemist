@@ -1,6 +1,0 @@
-package.json
-tsconfig.json
-tslint.json
-src/**
-transforms/**
-renderers/**

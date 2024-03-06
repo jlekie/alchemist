@@ -1,0 +1,8 @@
+// {{header}}
+
+{{#each declarations}}
+{{> (lookup . "declarationType")}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}

@@ -1,22 +1,22 @@
 {
-    "compilerOptions": {
-        "newLine": "LF",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "target": "esnext",
-        "strictPropertyInitialization": true,
-        "noImplicitAny": true,
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "strictNullChecks": true,
-        "declaration": true,
-        "sourceMap": true,
-        "skipLibCheck": true,
+  "extends": [
+    // "@tsconfig/esm",
+    "@tsconfig/node18",
+    "@tsconfig/strictest"
+  ],
+  "compilerOptions": {
+    "moduleResolution": "node16",
 
-        "baseUrl": "src",
-        "outDir": "dist",
-        "incremental": true,
-        "tsBuildInfoFile": "tsconfig.tsbuildinfo"
-    },
-    "include": [ "src" ]
+    "newLine": "LF",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "sourceMap": true,
+    "declaration": true,
+
+    "baseUrl": "src",
+    "outDir": "dist",
+    "incremental": true,
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
+  },
+  "include": [ "src" ]
 }

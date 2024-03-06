@@ -1,0 +1,9 @@
+version: v2
+name: typescript
+transmutations:
+  - module: "@alchemy/alchemist/transmutations/templating.handlebars"
+    templatePath: "@alchemy/alchemist/templates/typescript.yml"
+    partialsPaths:
+      - "@etheraline/alchemy/templates/typescript.yml"
+  - module: "@alchemy/alchemist/transmutations/output.file"
+    path: ${path}/**.ts

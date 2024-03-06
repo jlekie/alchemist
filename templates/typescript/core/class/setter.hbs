@@ -1,0 +1,5 @@
+{{accessModifier}} set {{name}}(value: {{dataType}}) {
+    {{#with implementation}}
+    {{> (lookup . "templateUri") context setter=..}}
+    {{/with}}
+}

@@ -1,0 +1,8 @@
+{{#if export}}export {{/if}}interface {{name}}{{#if extends}} extends {{#each extends}}{{.}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}} {
+    {{#each members}}
+    {{> (append "interface/" (lookup . "memberType")) class=..}}
+    {{#unless @last}}
+
+    {{/unless}}
+    {{/each}}
+}

@@ -1,0 +1,6 @@
+template: ./typescript.hbs
+partials:
+  - basePath: ./typescript/core
+    pattern: ./**/*.hbs
+  - basePath: ./typescript/implementations
+    pattern: ./**/*.hbs

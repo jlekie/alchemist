@@ -1,6 +1,4 @@
-dist
-node_modules
-yarn-error.log
-*.tsbuildinfo
-
 .glf
+node_modules
+dist
+*.tsbuildinfo

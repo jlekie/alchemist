@@ -1,0 +1,5 @@
+{{accessModifier}} get {{name}}(): {{dataType}} {
+    {{#with implementation}}
+    {{> (lookup . "templateUri") context getter=..}}
+    {{/with}}
+}

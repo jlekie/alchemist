@@ -1,0 +1,8 @@
+{{#if export}}export {{/if}}class {{name}}{{#if extends}} extends {{extends}}{{/if}}{{#if implements}} implements {{#each implements}}{{.}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}} {
+    {{#each members}}
+    {{> (append "class/" (lookup . "memberType")) class=..}}
+    {{#unless @last}}
+
+    {{/unless}}
+    {{/each}}
+}

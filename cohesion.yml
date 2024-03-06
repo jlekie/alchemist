@@ -2,17 +2,24 @@ labels:
   app.cohesion.io/name: alchemist
   app.cohesion.io/platform: nodejs
   app.cohesion.io/platform/language: typescript
-  app.cohesion.io/platform/pms: yarn
 tasks:
+  - name: lint
+    actions:
+      - type: node.script
+        script: lint
   - name: build
     actions:
-      - type: exec
-        cmd: yarn build
+      - type: node.script
+        script: build
   - name: watch
     actions:
-      - type: exec
-        cmd: yarn watch
-  - name: publish
+      - type: node.script
+        script: watch
+  - name: run
     actions:
-      - type: exec
-        cmd: yarn npm publish --tolerate-republish --access=public
+      - type: node.script
+        script: start
+  - name: transmute
+    actions:
+      - type: node.script
+        script: start transmute

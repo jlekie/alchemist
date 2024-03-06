@@ -1,0 +1,5 @@
+{{accessModifier}} constructor({{#each parameters}}{{name}}: {{dataType}}{{#unless @last}}, {{/unless}}{{/each}}){{#if returnDataType}}: {{returnDataType}}{{/if}} {
+    {{#with implementation}}
+    {{> (lookup . "templateUri") context method=..}}
+    {{/with}}
+}

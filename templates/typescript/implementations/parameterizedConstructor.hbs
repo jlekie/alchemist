@@ -1,0 +1,7 @@
+{{#if superParameters}}
+super({{#each superParameters}}{{.}}{{#unless @last}}, {{/unless}}{{/each}})
+
+{{/if}}
+{{#each properties}}
+this.{{propertyName}} = {{parameterName}};
+{{/each}}
