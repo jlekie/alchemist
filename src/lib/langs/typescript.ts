@@ -295,13 +295,15 @@ export class Class implements IDeclaration {
     public members: ClassMember[];
     public extends: string | undefined;
     public implements: string[];
+    public commentBlocks: string[][] | undefined;
 
-    public constructor(params: ConstructorParameters<Class, 'name', 'export' | 'members' | 'extends' | 'implements'>) {
+    public constructor(params: ConstructorParameters<Class, 'name', 'export' | 'members' | 'extends' | 'implements' | 'commentBlocks'>) {
         this.export = params.export ?? false;
         this.name = params.name;
         this.members = params.members ?? [];
         this.extends = params.extends;
         this.implements = params.implements ?? [];
+        this.commentBlocks = params.commentBlocks;
     }
 }
 
@@ -454,7 +456,8 @@ export class MethodParameter {
     // }
 }
 
-export class Implementation {
+export class Implementation implements IDeclaration {
+    public readonly declarationType = 'implementation';
     public templateUri: string
     public context: unknown | undefined;
 
@@ -474,4 +477,4 @@ export class Implementation {
 
 export type ClassMember = ClassGroup | ClassProperty | ClassConstructor | ClassMethod | ClassGetter | ClassSetter | ClassPrivateField;
 
-export type Declaration = Group | Import | DeclaredFunction | Enumeration | Interface | Class;
+export type Declaration = Group | Import | DeclaredFunction | Enumeration | Interface | Class | Implementation;

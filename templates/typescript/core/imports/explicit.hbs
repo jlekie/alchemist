@@ -1,0 +1,1 @@
+import { {{#each declarations}}{{name}}{{#if alias}} as {{alias}}{{/if}}{{#unless @last}}, {{/unless}}{{/each}} } from '{{moduleUri}}';
