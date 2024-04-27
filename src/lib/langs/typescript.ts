@@ -87,11 +87,14 @@ export class Document {
     public exports: unknown[];
     public declarations: Declaration[];
 
-    public constructor(params: ConstructorParameters<Document, 'header', 'imports' | 'exports' | 'declarations'>) {
+    public metadata: Record<string, unknown>;
+
+    public constructor(params: ConstructorParameters<Document, 'header', 'imports' | 'exports' | 'declarations' | 'metadata'>) {
         this.header = params.header;
         this.imports = params.imports ?? [];
         this.exports = params.exports ?? [];
         this.declarations = params.declarations ?? [];
+        this.metadata = params.metadata ?? {};
     }
 }
 // export function parseDocument(value: ExtractTypeSchema<typeof DocumentType>) {
@@ -122,6 +125,7 @@ export class Document {
 
 export interface IDeclaration {
     readonly declarationType: string;
+    metadata: Record<string, unknown>;
 }
 
 export class ExplicitImport implements IDeclaration {
@@ -129,10 +133,12 @@ export class ExplicitImport implements IDeclaration {
     public readonly importType = 'explicit';
     public moduleUri: string;
     public declarations: unknown[];
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<ExplicitImport, 'moduleUri', 'declarations'>) {
+    public constructor(params: ConstructorParameters<ExplicitImport, 'moduleUri', 'declarations' | 'metadata'>) {
         this.moduleUri = params.moduleUri;
         this.declarations = params.declarations ?? [];
+        this.metadata = params.metadata ?? {};
     }
 }
 // export function parseExplicitImport(value: ExtractTypeSchema<typeof ExplicitImportType>) {
@@ -146,10 +152,12 @@ export class EntireModuleImport implements IDeclaration {
     public readonly importType = 'entireModule';
     public moduleUri: string;
     public variableName: string;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<ModuleDefaultImport, 'moduleUri' | 'variableName'>) {
+    public constructor(params: ConstructorParameters<EntireModuleImport, 'moduleUri' | 'variableName', 'metadata'>) {
         this.moduleUri = params.moduleUri;
         this.variableName = params.variableName;
+        this.metadata = params.metadata ?? {};
     }
 }
 // export function parseEntireModuleImport(value: ExtractTypeSchema<typeof EntireModuleImportType>) {
@@ -163,10 +171,12 @@ export class ModuleDefaultImport implements IDeclaration {
     public readonly importType = 'moduleDefault';
     public moduleUri: string;
     public variableName: string;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<ModuleDefaultImport, 'moduleUri' | 'variableName'>) {
+    public constructor(params: ConstructorParameters<ModuleDefaultImport, 'moduleUri' | 'variableName', 'metadata'>) {
         this.moduleUri = params.moduleUri;
         this.variableName = params.variableName;
+        this.metadata = params.metadata ?? {};
     }
 }
 // export function parseModuleDefaultImport(value: ExtractTypeSchema<typeof ModuleDefaultImportType>) {
@@ -190,9 +200,11 @@ export type Import = ExplicitImport | EntireModuleImport | ModuleDefaultImport;
 export class Group implements IDeclaration {
     public readonly declarationType = 'group';
     public declarations: Declaration[];
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<Group, never, 'declarations'>) {
+    public constructor(params: ConstructorParameters<Group, never, 'declarations' | 'metadata'>) {
         this.declarations = params.declarations ?? [];
+        this.metadata = params.metadata ?? {};
     }
 }
 
@@ -200,16 +212,20 @@ export class DeclaredFunction implements IDeclaration {
     public readonly declarationType = 'function';
     public export: boolean;
     public name: string;
+    public async: boolean;
     public returnDataType: string | undefined;
     public parameters: MethodParameter[];
     public implementation: Implementation | undefined;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<DeclaredFunction, 'name', 'export' | 'returnDataType' | 'parameters' |'implementation'>) {
+    public constructor(params: ConstructorParameters<DeclaredFunction, 'name', 'export' | 'returnDataType' | 'parameters' |'implementation' | 'async' | 'metadata'>) {
         this.export = params.export ?? false;
         this.name = params.name;
+        this.async = params.async ?? false;
         this.returnDataType = params.returnDataType;
         this.parameters = params.parameters ?? [];
         this.implementation = params.implementation;
+        this.metadata = params.metadata ?? {};
     }
 }
 
@@ -218,21 +234,25 @@ export class Enumeration implements IDeclaration {
     public name: string;
     public values: EnumerationValue[]
     public export: boolean;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<Enumeration, 'name', 'values' | 'export'>) {
+    public constructor(params: ConstructorParameters<Enumeration, 'name', 'values' | 'export' | 'metadata'>) {
         this.name = params.name;
         this.values = params.values ?? [];
         this.export = params.export ?? false;
+        this.metadata = params.metadata ?? {};
     }
 }
 export class EnumerationValue implements IDeclaration {
     public readonly declarationType = 'enumerationValue';
     public name: string;
     public value: number | undefined;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<EnumerationValue, 'name', 'value'>) {
+    public constructor(params: ConstructorParameters<EnumerationValue, 'name', 'value' | 'metadata'>) {
         this.name = params.name;
         this.value = params.value;
+        this.metadata = params.metadata ?? {};
     }
 }
 
@@ -242,12 +262,14 @@ export class Interface implements IDeclaration {
     public name: string;
     public members: InterfaceMember[];
     public extends: string[];
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<Interface, 'name', 'export' | 'members' | 'extends'>) {
+    public constructor(params: ConstructorParameters<Interface, 'name', 'export' | 'members' | 'extends' | 'metadata'>) {
         this.export = params.export ?? false;
         this.name = params.name;
         this.members = params.members ?? [];
         this.extends = params.extends ?? [];
+        this.metadata = params.metadata ?? {};
     }
 }
 
@@ -296,14 +318,16 @@ export class Class implements IDeclaration {
     public extends: string | undefined;
     public implements: string[];
     public commentBlocks: string[][] | undefined;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<Class, 'name', 'export' | 'members' | 'extends' | 'implements' | 'commentBlocks'>) {
+    public constructor(params: ConstructorParameters<Class, 'name', 'export' | 'members' | 'extends' | 'implements' | 'commentBlocks' | 'metadata'>) {
         this.export = params.export ?? false;
         this.name = params.name;
         this.members = params.members ?? [];
         this.extends = params.extends;
         this.implements = params.implements ?? [];
         this.commentBlocks = params.commentBlocks;
+        this.metadata = params.metadata ?? {};
     }
 }
 
@@ -460,10 +484,12 @@ export class Implementation implements IDeclaration {
     public readonly declarationType = 'implementation';
     public templateUri: string
     public context: unknown | undefined;
+    public metadata: Record<string, unknown>;
 
-    public constructor(params: ConstructorParameters<Implementation, 'templateUri', 'context'>) {
+    public constructor(params: ConstructorParameters<Implementation, 'templateUri', 'context' | 'metadata'>) {
         this.templateUri = params.templateUri;
         this.context = params.context;
+        this.metadata = params.metadata ?? {};
     }
 }
 
