@@ -272,7 +272,9 @@ export class ReferencedTransmutation {
     }
 
     public transmute(variables: Record<string, string>, observable: Observable<Context>) {
-        const resolvedModulePath = require.resolve(this.module);
+        const resolvedModulePath = require.resolve(this.module, {
+            paths: [ process.cwd() ]
+        });
 
         return from(import(`file://${resolvedModulePath}`)).pipe(
             // tap(context => console.log(context)),

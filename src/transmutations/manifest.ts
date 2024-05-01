@@ -34,7 +34,9 @@ export default (async (options, params) => {
     if (!OptionsTypeCheck.check(options))
         throw new FluentTypeCheckError('options validation failed', OptionsTypeCheck, options);
 
-    const manifestPath = require.resolve(Manifest.resolveTemplate(options.path, params.variables));
+    const manifestPath = require.resolve(Manifest.resolveTemplate(options.path, params.variables), {
+        paths: [ process.cwd() ]
+    });
     // const manifestPath = Path.resolve(Manifest.resolveTemplate(options.path, params.variables));
     const manifest = await Manifest.loadManifest(manifestPath);
 
