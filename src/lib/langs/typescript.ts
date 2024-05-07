@@ -346,13 +346,15 @@ export class ClassProperty {
     public dataType: string;
     public accessModifier: AccessModifiers;
     public readonly: boolean;
+    public static: boolean;
     public value: unknown | undefined;
 
-    public constructor(params: ConstructorParameters<ClassProperty, 'name' | 'dataType', 'accessModifier' | 'readonly' | 'value'>) {
+    public constructor(params: ConstructorParameters<ClassProperty, 'name' | 'dataType', 'accessModifier' | 'readonly' | 'static' | 'value'>) {
         this.name = params.name;
         this.dataType = params.dataType;
         this.accessModifier = params.accessModifier ?? AccessModifiers.Private;
         this.readonly = params.readonly ?? false;
+        this.static = params.static ?? false;
         this.value = params.value;
     }
 
