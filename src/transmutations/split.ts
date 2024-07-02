@@ -19,7 +19,7 @@ class SplitTransmutation implements Transmutation.TransmutationModule {
     }
 
     public transmute(params: Transmutation.TransmuteContext) {
-        const tmp = Rx.from(this.transmutations).pipe(
+        return Rx.from(this.transmutations).pipe(
             Rx.concatMap(transmutations => {
                 const observable = params.observable.pipe(
                     Rx.map(c => c.forward(c.payload))
@@ -35,8 +35,6 @@ class SplitTransmutation implements Transmutation.TransmutationModule {
                 return tmp;
             })
         );
-
-        return tmp;
     }
 }
 
@@ -63,7 +61,6 @@ export default ((options, params) => {
             : Manifest.ReferencedTransmutation.fromSchema(t)
         )
     );
-    console.log(transmutations)
 
     // const transmutations = options.transmutations?.map(t => typeof t === 'string'
     //     ? new Manifest.ReferencedTransmutation({ module: t })
