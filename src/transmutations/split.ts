@@ -6,53 +6,69 @@ import * as Yaml from 'js-yaml';
 
 import { Transmutation, Manifest, Context } from '..';
 import * as Rx from 'rxjs';
+import { reduce } from 'bluebird';
 
 interface SplitTransmutationParams {
     transmutations?: SplitTransmutation['transmutations'] | undefined;
 }
 class SplitTransmutation implements Transmutation.TransmutationModule {
-    public readonly transmutations: Manifest.ReferencedTransmutation[];
+    public readonly transmutations: Manifest.ReferencedTransmutation[][];
 
     public constructor(params: SplitTransmutationParams) {
         this.transmutations = params.transmutations ?? [];
     }
 
     public transmute(params: Transmutation.TransmuteContext) {
-        return params.observable.pipe(
-            Rx.concatMap(context => Rx.from(this.transmutations).pipe(
-                Rx.map(t => t.transmute(params.variables, Rx.of(context)))
-            )),
-            Rx.concatAll()
-        )
+        const tmp = Rx.from(this.transmutations).pipe(
+            Rx.concatMap(transmutations => {
+                const observable = params.observable.pipe(
+                    Rx.map(c => c.forward(c.payload))
+                );
 
-        // params.observable.subscribe(o => {
-        //     console.log('CONTEXT', o)
-        // })
+                const tmp = Rx.from(transmutations).pipe(
+                    Rx.reduce((o, t) => {
+                        return t.transmute(params.variables, o);
+                    }, observable),
+                    Rx.concatAll()
+                );
 
-        // return Rx.from(this.transmutations).pipe(
-        //     Rx.reduce((o, t) => {
-        //         return t.transmute(params.variables, o);
-        //     }, (params.observable.pipe(Rx.map(o => o.forward(o.payload))) ?? Rx.from<Context.Context[]>([ new Context.Context({ payload: undefined }) ]))),
-        //     Rx.concatAll()
-        // );
+                return tmp;
+            })
+        );
+
+        return tmp;
     }
 }
 
 const OptionsTypeCheck = FT.object({
     transmutations: FT.union([
-        FT.string(),
-        Manifest.ModuleReference
-    ]).array().optional()
+        FT.union([
+            FT.string(),
+            Manifest.ModuleReference
+        ]),
+        FT.union([
+            FT.string(),
+            Manifest.ModuleReference
+        ]).array()
+    ]).array()
 }).compile();
 
 export default ((options, params) => {
     if (!OptionsTypeCheck.check(options))
         throw new FluentTypeCheckError('options validation failed', OptionsTypeCheck, options);
 
-    const transmutations = options.transmutations?.map(t => typeof t === 'string'
-        ? new Manifest.ReferencedTransmutation({ module: t })
-        : Manifest.ReferencedTransmutation.fromSchema(t)
+    const transmutations = options.transmutations.map(t => Array.isArray(t) ? t : [ t ])
+        .map(t => t.map(t => typeof t === 'string'
+            ? new Manifest.ReferencedTransmutation({ module: t })
+            : Manifest.ReferencedTransmutation.fromSchema(t)
+        )
     );
+    console.log(transmutations)
+
+    // const transmutations = options.transmutations?.map(t => typeof t === 'string'
+    //     ? new Manifest.ReferencedTransmutation({ module: t })
+    //     : Manifest.ReferencedTransmutation.fromSchema(t)
+    // );
 
     return new SplitTransmutation({ transmutations });
 }) satisfies Transmutation.TransmutationModuleFunction;
