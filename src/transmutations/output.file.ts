@@ -36,10 +36,11 @@ class InputTextFileTransmutation implements Transmutation.TransmutationModule {
             // }),
             filter(isString),
             mergeMap(context => {
-                console.log(params.variables)
+                // console.log(params.variables)
                 const path = context.metadata['alchemist.io/output/qualifier'] ? this.path.replace('**', context.metadata['alchemist.io/output/qualifier'].toString()) : this.path;
 
                 return from((async () => {
+                    console.log(`Writing file to "${path}"`);
                     await FS.ensureFile(path);
                     await FS.writeFile(path, context.payload);
 

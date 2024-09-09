@@ -34,6 +34,7 @@ class InputTextFileTransmutation implements Transmutation.TransmutationModule {
                 const path = context.metadata['alchemist.io/output/qualifier'] ? this.path.replace('**', context.metadata['alchemist.io/output/qualifier'].toString()) : this.path;
 
                 return from((async () => {
+                    console.log(`Writing file to "${path}"`);
                     await FS.ensureFile(path);
                     await FS.writeFile(path, Yaml.dump(context.payload, {
                         indent: 2
