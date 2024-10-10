@@ -132,7 +132,7 @@ export class ExplicitImport implements IDeclaration {
     public readonly declarationType = 'import';
     public readonly importType = 'explicit';
     public moduleUri: string;
-    public declarations: unknown[];
+    public declarations: { name: string, alias?: string }[];
     public metadata: Record<string, unknown>;
 
     public constructor(params: ConstructorParameters<ExplicitImport, 'moduleUri', 'declarations' | 'metadata'>) {
